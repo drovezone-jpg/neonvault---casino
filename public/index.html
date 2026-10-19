@@ -1,1 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NeonVault Casino — Play-Money Provably Fair Demo</title>
+<style>
+:root{
+  --bg:#0d0f1a; --panel:#151827; --panel2:#1c2033; --line:#2a2f4a;
+  --neon:#00e5a0; --neon2:#7c5cff; --pink:#ff4d8d; --gold:#ffc24b;
+  --txt:#e8ecff; --dim:#8a91b5; --red:#ff5c7a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(600px 300px at 80% -10%,rgba(124,92,255,.18),transparent),
+  radial-gradient(500px 300px at 10% 110%,rgba(0,229,160,.12),transparent);pointer-events:none}
+.wrap{max-width:1100px;margin:0 auto;padding:18px;position:relative}
+header{display:flex;justify-content:space-between;align-items:center;padding:10px 4px 22px;flex-wrap:wrap;gap:12px}
+.logo{font-size:26px;font-weight:800;letter-spacing:.5px}
+.logo b{color:var(--neon)}.logo span{color:var(--neon2)}
+.tag{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:99px;padding:3px 10px}
+.topbtns{display:flex;gap:8px;align-items:center}
+.balance-pill{background:var(--panel2);border:1px solid var(--line);border-radius:99px;padding:8px 16px;font-weight:700;color:var(--gold)}
+.balance-pill small{color:var(--dim);font-weight:400}
+button{cursor:pointer;border:none;border-radius:10px;font-weight:700;transition:.15s}
+.btn{padding:10px 18px;background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+.btn:hover{border-color:var(--neon)}
+.btn.primary{background:linear-gradient(135deg,var(--neon),#00b8d4);color:#04121c}
+.btn.warn{background:var(--pink);color:#fff}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:14px}
+input,select{width:100%;padding:11px 13px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:10px;color:var(--txt);font-size:14px;outline:none}
+input:focus{border-color:var(--neon)}
+label{font-size:12px;color:var(--dim);display:block;margin:10px 0 5px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.hide{display:none!important}
+.err{color:var(--red);font-size:13px;margin-top:8px;min-height:16px}
+.ok{color:var(--neon);font-size:13px;margin-top:8px}
+#authCard{max-width:420px;margin:60px auto}
+.tabs{display:flex;gap:6px;margin-bottom:16px}
+.tab{flex:1;padding:9px;background:transparent;color:var(--dim);border:1px solid var(--line);border-radius:9px}
+.tab.on{color:#04121c;background:var(--neon);border-color:var(--neon)}
+.games{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.game-btn{padding:18px 8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--txt);font-size:15px}
+.game-btn.on{border-color:var(--neon);box-shadow:0 0 18px rgba(0,229,160,.25);color:var(--neon)}
+.betrow{display:flex;gap:10px;align-items:flex-end;margin:12px 0;flex-wrap:wrap}
+.betrow>div{flex:1;min-width:130px}
+.big{font-size:52px;font-weight:800;text-align:center;padding:26px 0;font-family:monospace}
+.big.win{color:var(--neon);text-shadow:0 0 25px rgba(0,229,160,.5)}
+.big.lose{color:var(--red)}
+.reels{display:flex;justify-content:center;gap:14px;font-size:56px;padding:22px 0}
+.reel{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:8px 18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--dim);text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);font-weight:600}
+td{padding:7px 8px;border-bottom:1px solid rgba(42,47,74,.5)}
+.up{color:var(--neon)}.down{color:var(--red)}
+.hist{max-height:210px;overflow-y:auto}
+.chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.chip.w{background:rgba(0,229,160,.15);color:var(--neon)}
+.chip.l{background:rgba(255,92,122,.15);color:var(--red)}
+.chip.n{background:rgba(124,92,255,.15);color:var(--neon2)}
+.seeds{font-family:monospace;font-size:11px;color:var(--dim);word-break:break-all}
+.modal{position:fixed;inset:0;background:rgba(5,6,12,.8);display:flex;align-items:center;justify-content:center;z-index:50}
+.agebox{max-width:430px}
+.chk{display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--txt);margin-top:12px;text-align:left}
+.chk input{width:auto;margin-top:3px}
+.notice{font-size:12px;color:var(--gold);background:rgba(255,194,75,.08);border:1px solid rgba(255,194,75,.3);border-radius:10px;padding:10px 12px;margin-top:12px}
+.crash-track{height:120px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:10px 0}
+.crash-mult{font-size:44px;font-weight:800;font-family:monospace}
+@media(max-width:760px){.games{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<!-- 18+ age gate -->
+<div class="modal" id="ageGate">
+  <div class="card agebox">
+    <h2 style="text-align:center;font-size:22px;color:var(--neon)">🔞 Age Verification</h2>
+    <p style="font-size:14px;color:var(--dim);margin:10px 0">This is a <b style="color:var(--txt)">play-money demo</b> — no real currency is used. You must be 18 or older to enter.</p>
+    <div class="chk"><input type="checkbox" id="ageChk"/><label for="ageChk" style="all:unset;cursor:pointer">I confirm I am 18+ and understand this is a simulated gambling demo with no real-money value.</label></div>
+    <button class="btn primary" style="width:100%;margin-top:16px" id="ageEnter" disabled>Enter Casino</button>
+  </div>
+</div>
 
+<div class="wrap">
+<header>
+  <div class="logo">Neon<b>Vault</b> <span>CASINO</span></div>
+  <span class="tag">⚠️ PLAY-MONEY DEMO · PROVABLY FAIR · 18+</span>
+  <div class="topbtns" id="topbar"></div>
+</header>
+
+<!-- AUTH -->
+<div class="card" id="authCard">
+  <div class="tabs">
+    <button class="tab on" id="tabLogin">Login</button>
+    <button class="tab" id="tabReg">Register</button>
+  </div>
+  <label>Username or Email</label><input id="aUser"/>
+  <label>Username <small style="color:var(--neon)">(register only)</small></label><input id="aUsername" class="hide"/>
+  <label>Email <small style="color:var(--neon)">(register only)</small></label><input id="aEmail" class="hide"/>
+  <label>Password</label><input id="aPass" type="password"/>
+  <div class="chk hide" id="ageChk2row"><input type="checkbox" id="ageChk2"/><label for="ageChk2" style="all:unset;cursor:pointer">I am 18+</label></div>
+  <button class="btn primary" style="width:100%;margin-top:16px" id="aGo">Login</button>
+  <div class="err" id="aErr"></div>
+  <div class="notice">Demo tip: admin account is <b>admin / admin123</b> (change config.js). New players get a 1,000 GC signup bonus.</div>
+</div>
+
+<!-- LOBBY -->
+<div id="lobby" class="hide">
+  <div class="games">
+    <button class="game-btn on" data-g="dice">🎲 Dice</button>
+    <button class="game-btn" data-g="crash">🚀 Crash</button>
+    <button class="game-btn" data-g="plinko">🔻 Plinko</button>
+    <button class="game-btn" data-g="slots">🎰 Slots</button>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2 id="gameTitle">Dice</h2>
+      <div class="betrow">
+        <div><label>Wager (GC)</label><input id="wager" type="number" value="10" min="1"/></div>
+        <div id="paramWrap"><label>Target (roll <b id="dirLbl">over</b>)</label><input id="target" type="number" value="50"/></div>
+        <button id="dirBtn" class="btn" style="flex:0">⇄</button>
+      </div>
+      <div class="betrow" id="crashRow" style="display:none">
+        <div><label>Auto-cashout multiplier</label><input id="cashout" type="number" value="2.00" step="0.01"/></div>
+      </div>
+      <button class="btn primary" style="width:100%;padding:14px;font-size:16px" id="betBtn">🎲 Bet</button>
+      <div class="err" id="betErr"></div>
+      <div class="big" id="resultBox">—</div>
+      <div id="crashTrackWrap" class="crash-track hide"><div class="crash-mult" id="crashMult">1.00x</div></div>
+      <div id="reelsWrap" class="reels hide"><div class="reel">🍒</div><div class="reel">🔔</div><div class="reel">💎</div></div>
+      <div style="text-align:center;color:var(--dim);font-size:13px" id="payInfo"></div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>My Bets</h2>
+        <div class="hist"><table><thead><tr><th>#</th><th>Game</th><th>Wager</th><th>Mult</th><th>Payout</th></tr></thead><tbody id="betsBody"></tbody></table></div>
+      </div>
+      <div class="card">
+        <h2>🔒 Provably Fair</h2>
+        <div class="seeds" id="seedInfo"></div>
+        <div class="row" style="margin-top:10px">
+          <input id="newClientSeed" placeholder="new client seed"/>
+          <button class="btn" id="setSeedBtn">Set</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn warn" id="rotBtn">Rotate & reveal server seed</button>
+          <input id="verifyId" placeholder="bet id to verify" style="flex:0;width:130px"/>
+          <button class="btn" id="verifyBtn">Verify</button>
+        </div>
+        <div class="seeds ok" id="fairOut"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>💰 Wallet <small style="text-transform:none">(mock PSP · play money)</small></h2>
+      <div class="row">
+        <div><label>Amount (GC)</label><input id="wAmt" type="number" value="500"/></div>
+        <button class="btn primary" id="depBtn" style="align-self:flex-end">Deposit</button>
+        <button class="btn warn" id="wdrBtn" style="align-self:flex-end">Withdraw</button>
+      </div>
+      <div class="err" id="wErr"></div><div class="ok" id="wOk"></div>
+      <h2 style="margin-top:16px">Transactions</h2>
+      <div class="hist"><table><thead><tr><th>Type</th><th>Amount</th><th>Balance</th><th>Ref</th></tr></thead><tbody id="txBody"></tbody></table></div>
+    </div>
+    <div class="card">
+      <h2>🛡️ Responsible Gambling</h2>
+      <label>Daily loss limit (GC, blank = none)</label><input id="lossLim" type="number"/>
+      <label>Max bet (GC)</label><input id="maxBetLim" type="number"/>
+      <button class="btn primary" style="margin-top:12px" id="limBtn">Save limits</button>
+      <div class="ok" id="limOk"></div>
+      <div class="notice">Gambling should be entertainment, never income. If it stops being fun: <b>begambleaware.org</b></div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="card hide" id="adminCard">
+    <h2>⚙️ Admin Panel</h2>
+    <div class="row" style="margin-bottom:10px">
+      <input id="adjUser" placeholder="user id"/>
+      <input id="adjAmt" placeholder="amount (±GC)"/>
+      <button class="btn" id="adjBtn">Adjust balance</button>
+    </div>
+    <table><thead><tr><th>ID</th><th>User</th><th>Email</th><th>Balance</th><th>Status</th><th></th></tr></thead><tbody id="adminBody"></tbody></table>
+    <h2 style="margin-top:16px">All Bets (latest 100)</h2>
+    <div class="hist" style="max-height:260px"><table><thead><tr><th>#</th><th>User</th><th>Game</th><th>Wager</th><th>Mult</th><th>Payout</th></tr></thead><tbody id="allBets"></tbody></table></div>
+  </div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const api=async(p,body)=>{const r=await fetch('/api'+p,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,credentials:'same-origin'});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||r.status);return j};
+let user=null,game='dice',dir='over';
+
+/* age gate */
+$('ageChk').onchange=e=>$('ageEnter').disabled=!e.target.checked;
+$('ageEnter').onclick=()=>{$('ageGate').remove();localStorage.setItem('ageOk','1')};
+if(localStorage.getItem('ageOk'))$('ageGate').remove();
+
+/* auth */
+$('tabLogin').onclick=()=>swAuth(true);$('tabReg').onclick=()=>swAuth(false);
+function swAuth(login){
+  $('tabLogin').classList.toggle('on',login);$('tabReg').classList.toggle('on',!login);
+  $('aUsername').classList.toggle('hide',login);$('aEmail').classList.toggle('hide',login);
+  $('ageChk2row').classList.toggle('hide',login);$('aGo').textContent=login?'Login':'Create account';
+}
+$('aGo').onclick=async()=>{
+  $('aErr').textContent='';
+  try{
+    if($('tabReg').classList.contains('on')){
+      await api('/auth/register',{username:$('aUsername').value.trim(),email:$('aEmail').value.trim(),password:$('aPass').value,ageConfirmed:$('ageChk2').checked});
+    }
+    await api('/auth/login',{username:$('aUser').value.trim(),password:$('aPass').value});
+    init();
+  }catch(e){$('aErr').textContent=e.message}
+};
+
+async function init(){
+  try{
+    const d=await api('/me');user=d.user;
+    renderTop();$('authCard').classList.add('hide');$('lobby').classList.remove('hide');
+    $('seedInfo').textContent=`server seed hash: ${d.serverSeedHash}\nclient seed: ${user.client_seed} · nonce: ${user.nonce}`;
+    if(user.role==='admin'){$('adminCard').classList.remove('hide');loadAdmin()}
+    await Promise.all([loadTx(),loadBets(),loadLimits()]);
+  }catch(e){/* not logged in */}
+}
+function renderTop(){
+  $('topbar').innerHTML=`<div class="balance-pill"><small>${user.username} ·</small> ${user.balance.toFixed(2)} GC</div><button class="btn ghost" id="outBtn">Logout</button>`;
+  $('outBtn').onclick=async()=>{await api('/auth/logout',{});location.reload()};
+}
+
+/* games */
+document.querySelectorAll('.game-btn').forEach(b=>b.onclick=()=>{
+  game=b.dataset.g;
+  document.querySelectorAll('.game-btn').forEach(x=>x.classList.toggle('on',x===b));
+  $('crashRow').style.display=game==='crash'?'flex':'none';
+  $('paramWrap').style.display=game==='dice'?'block':'none';
+  $('dirBtn').style.display=game==='dice'?'block':'none';
+  $('crashTrackWrap').classList.toggle('hide',game!=='crash');
+  $('reelsWrap').classList.toggle('hide',game!=='slots');
+  $('betBtn').textContent={dice:'🎲 Roll Dice',crash:'🚀 Launch Crash',plinko:'🔻 Drop Ball',slots:'🎰 Spin'}[game];
+  $('gameTitle').textContent=game[0].toUpperCase()+game.slice(1);
+  $('payInfo').textContent={dice:'Payout = 99 / win-chance (1% house edge)',crash:'Payout = your auto-cashout, ~1% instant-bust band',
+    plinko:'16 rows · medium risk: 0.3x – 16x',slots:'Triples: 🍒4 🍋6 🔔10 ⭐16 💎30 🍇12 🎲8 🍀40 7️⃣75 👑150 · pairs 1.5x'}[game];
+  $('resultBox').textContent='—';$('resultBox').className='big';
+});
+$('dirBtn').onclick=()=>{dir=dir==='over'?'under':'over';$('dirLbl').textContent=dir};
+$('betBtn').onclick=async()=>{
+  $('betErr').textContent='';$('betBtn').disabled=true;
+  const wager=+$('wager').value;
+  try{
+    let d;
+    if(game==='dice')d=await api('/games/dice',{wager,target:+$('target').value,direction:dir});
+    if(game==='crash')d=await api('/games/crash',{wager,autoCashout:+$('cashout').value});
+    if(game==='plinko')d=await api('/games/plinko',{wager});
+    if(game==='slots')d=await api('/games/slots',{wager});
+    showResult(d);user.balance=d.balance;renderTop();loadBets();loadTx();
+  }catch(e){$('betErr').textContent=e.message}
+  $('betBtn').disabled=false;
+};
+function showResult(d){
+  const won=(d.payout||0)>(d.wager||0)||d.multiplier>=1;
+  if(game==='slots'){const r=$('reelsWrap').children;[...r].forEach((el,i)=>el.textContent=d.symbols[i]);}
+  if(game==='crash'){$('crashMult').textContent=d.crashPoint.toFixed(2)+'x';$('crashMult').style.color=d.won?'var(--neon)':'var(--red)';}
+  const box=$('resultBox');
+  box.className='big '+(d.payout>0?'win':'lose');
+  box.textContent=game==='dice'?d.roll.toFixed(2):game==='crash'?(d.won?'CASHED '+d.multiplier+'x':'BUSTED @'+d.crashPoint.toFixed(2)+'x'):d.payout>0?('+'+d.payout+' GC  ('+d.multiplier+'x)'):'No win';
+  box.title='Bet #'+d.betId+' — verify it in the fairness panel';
+}
+
+/* wallet */
+$('depBtn').onclick=async()=>{try{const d=await api('/wallet/deposit',{amount:+$('wAmt').value});user.balance=d.balance;renderTop();$('wOk').textContent='✅ Deposit ok ('+d.pspRef+')';$('wErr').textContent='';loadTx()}catch(e){$('wErr').textContent=e.message;$('wOk').textContent=''}};
+$('wdrBtn').onclick=async()=>{try{const d=await api('/wallet/withdraw',{amount:+$('wAmt').value});user.balance=d.balance;renderTop();$('wOk').textContent='✅ Withdrawal paid ('+d.pspRef+')';$('wErr').textContent='';loadTx()}catch(e){$('wErr').textContent=e.message;$('wOk').textContent=''}};
+
+async function loadTx(){
+  const d=await api('/wallet/transactions');
+  $('txBody').innerHTML=d.transactions.slice(0,12).map(t=>`<tr><td>${t.type}</td><td class="${t.amount>=0?'up':'down'}">${t.amount>=0?'+':''}${t.amount.toFixed(2)}</td><td>${t.balanceAfter.toFixed(2)}</td><td style="color:var(--dim);font-size:11px">${t.ref||''}</td></tr>`).join('');
+}
+async function loadBets(){
+  const d=await api('/bets/mine');
+  $('betsBody').innerHTML=d.bets.slice(0,12).map(b=>`<tr><td>${b.id}</td><td>${b.game}</td><td>${b.wager.toFixed(2)}</td><td>${b.multiplier}x</td><td class="${b.payout>0?'up':'down'}">${b.payout>0?'+'+b.payout.toFixed(2):'0.00'}</td></tr>`).join('');
+}
+
+/* fairness */
+$('setSeedBtn').onclick=async()=>{try{await api('/fair/set-client-seed',{clientSeed:$('newClientSeed').value.trim()});$('fairOut').textContent='client seed updated';init()}catch(e){$('fairOut').textContent=e.message}};
+$('rotBtn').onclick=async()=>{try{const d=await api('/fair/rotate-seed',{});$('fairOut').textContent='revealed: '+d.revealedSeed+' · hash: '+d.hashOfRevealed;init()}catch(e){$('fairOut').textContent=e.message}};
+$('verifyBtn').onclick=async()=>{try{const d=await api('/fair/verify/'+$('verifyId').value.trim());$('fairOut').textContent=JSON.stringify({bet:d.bet.outcome,hashMatches:d.hashMatches})}catch(e){$('fairOut').textContent=e.message}};
+
+/* limits */
+async function loadLimits(){const d=await api('/limits');$('lossLim').value=d.dailyLossLimit??'';$('maxBetLim').value=d.maxBet??''}
+$('limBtn').onclick=async()=>{try{await api('/limits',{dailyLossLimit:$('lossLim').value===''?null:+$('lossLim').value,maxBet:$('maxBetLim').value===''?null:+$('maxBetLim').value});$('limOk').textContent='✅ Limits saved'}catch(e){$('limOk').textContent=e.message}};
+
+/* admin */
+async function loadAdmin(){
+  const [u,b]=await Promise.all([api('/admin/users'),api('/admin/bets')]);
+  $('adminBody').innerHTML=u.users.map(x=>`<tr><td>${x.id}</td><td>${x.username}</td><td>${x.email}</td><td>${x.balance.toFixed(2)}</td><td>${x.locked?'<span class="chip l">locked</span>':'<span class="chip w">active</span>'}</td>
+  <td>${x.role!=='admin'?`<button class="btn" onclick="lockU(${x.id},${!x.locked})">${x.locked?'Unlock':'Lock'}</button>`:''}</td></tr>`).join('');
+  $('allBets').innerHTML=b.bets.map(x=>`<tr><td>${x.id}</td><td>${x.username}</td><td>${x.game}</td><td>${x.wager.toFixed(2)}</td><td>${x.multiplier}x</td><td class="${x.payout>0?'up':'down'}">${x.payout.toFixed(2)}</td></tr>`).join('');
+}
+$('adjBtn').onclick=async()=>{try{await api('/admin/adjust',{userId:+$('adjUser').value,amount:+$('adjAmt').value});loadAdmin()}catch(e){alert(e.message)}};
+async function lockU(id,locked){await api('/admin/lock',{userId:id,locked});loadAdmin()}
+
+init();
+</script>
+</body>
+</html>
