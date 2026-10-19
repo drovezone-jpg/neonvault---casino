@@ -1,0 +1,18 @@
+{
+  "name": "neonvault-casino",
+  "version": "1.0.0",
+  "description": "Play-money provably-fair casino demo (Stake-style). NO real-money gambling - requires licensing/KYC.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
